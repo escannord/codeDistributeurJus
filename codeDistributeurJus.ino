@@ -55,7 +55,8 @@ String nomJus = "Aucun";
 int TemoinQuantite = 0;
 unsigned long startTime;
 unsigned long timeToService = 0;
-unsigned long volume = 0;
+unsigned long volumeTimer = 0;
+bool isPumpActive = false;
 void setup() {
   Serial.begin(115200);
   WiFi.begin(ssid, password);
@@ -108,7 +109,7 @@ void loop() {
     if (key == '1') { selectedPump = 1; nomJus = "Orange"; }
     else if (key == '2') { selectedPump = 2; nomJus = "Ananas"; }
     else if (key == '3') { selectedPump = 3; nomJus = "Maracouja"; }
-    startTime = millis();
+    
     tft.fillRect(10, 70, 200, 30, TFT_BLACK);
     tft.setCursor(10, 70);
     tft.setTextColor(TFT_GREEN, TFT_BLACK);
@@ -151,12 +152,13 @@ void loop() {
       tft.setTextColor(TFT_YELLOW, TFT_BLACK);
       tft.println("Remplissage...");
     } else {
-      desactiverToutesPompes();
-      timeToService = millis() - startTime;
-      volume = timeToService*450/(1000*245);
+      timeToService = (millis() - startTime)/1000;
+      volumeTimer = timeToService*450/245;
       // envoi vers le serveur d'API
-      sendToAPI(selectedPump, volume, "Completed");
-      TemoinQuantite = 0;
+      sendToAPI(selectedPump, volumeTimer, "Completed");
+      
+      desactiverToutesPompes();
+      //TemoinQuantite = 0;
 
       tft.fillRect(10, 100, 240, 30, TFT_BLACK);
       tft.setCursor(10, 100);
@@ -176,14 +178,24 @@ void loop() {
 }
 
 void activerPompe(int num) {
+  if (!isPumpActive) {  // Si la pompe n'était pas déjà active
+    startTime = millis();  // Enregistre le temps de démarrage
+    isPumpActive = true;
+  }
   digitalWrite(RELAY_PUMP1, num == 1 ? HIGH : LOW);
   digitalWrite(RELAY_PUMP2, num == 2 ? HIGH : LOW);
   digitalWrite(RELAY_PUMP3, num == 3 ? HIGH : LOW);
+  //isPumpActive = true;
+
   TemoinQuantite +=1;
   Serial.println(TemoinQuantite);
 }
 
 void desactiverToutesPompes() {
+  if (isPumpActive) {  // Si la pompe était active
+    totalPumpTime += (millis() - startTimePump) / 1000.0;  // Ajoute le temps en secondes
+    isPumpActive = false;
+  }
   digitalWrite(RELAY_PUMP1, LOW);
   digitalWrite(RELAY_PUMP2, LOW);
   digitalWrite(RELAY_PUMP3, LOW);
