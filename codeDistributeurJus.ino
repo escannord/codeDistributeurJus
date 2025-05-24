@@ -192,15 +192,18 @@ void activerPompe(int num) {
 }
 
 void desactiverToutesPompes() {
+  
+  digitalWrite(RELAY_PUMP1, LOW);
+  digitalWrite(RELAY_PUMP2, LOW);
+  digitalWrite(RELAY_PUMP3, LOW);
+  
   if (isPumpActive) {  // Si la pompe était active
     timeToService = (millis() - startTime) / 1000.0;  // Ajoute le temps en secondes
     isPumpActive = false;
     volumeTimer = timeToService * 430 / 215;
     sendToAPI(selectedPump, volumeTimer, "completed");
   }
-  digitalWrite(RELAY_PUMP1, LOW);
-  digitalWrite(RELAY_PUMP2, LOW);
-  digitalWrite(RELAY_PUMP3, LOW);
+
 }
 
 void handleWebPage() {
