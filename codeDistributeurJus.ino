@@ -53,7 +53,9 @@ Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 int selectedPump = 0;
 String nomJus = "Aucun";
 int TemoinQuantite = 0;
-
+unsigned long startTime;
+unsigned long timeToService = 0;
+unsigned long volume = 0;
 void setup() {
   Serial.begin(115200);
   WiFi.begin(ssid, password);
@@ -106,7 +108,7 @@ void loop() {
     if (key == '1') { selectedPump = 1; nomJus = "Orange"; }
     else if (key == '2') { selectedPump = 2; nomJus = "Ananas"; }
     else if (key == '3') { selectedPump = 3; nomJus = "Maracouja"; }
-
+    startTime = millis();
     tft.fillRect(10, 70, 200, 30, TFT_BLACK);
     tft.setCursor(10, 70);
     tft.setTextColor(TFT_GREEN, TFT_BLACK);
@@ -150,10 +152,12 @@ void loop() {
       tft.println("Remplissage...");
     } else {
       desactiverToutesPompes();
+      timeToService = millis() - startTime;
+      volume = timeToService*450/(1000*245);
       // envoi vers le serveur d'API
-      sendToAPI(selectedPump, TemoinQuantite, "Completed");
+      sendToAPI(selectedPump, volume, "Completed");
       TemoinQuantite = 0;
-      
+
       tft.fillRect(10, 100, 240, 30, TFT_BLACK);
       tft.setCursor(10, 100);
       tft.setTextColor(TFT_RED, TFT_BLACK);
