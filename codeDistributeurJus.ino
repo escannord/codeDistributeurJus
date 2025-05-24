@@ -152,10 +152,10 @@ void loop() {
       tft.setTextColor(TFT_YELLOW, TFT_BLACK);
       tft.println("Remplissage...");
     } else {
-      timeToService = (millis() - startTime)/1000;
-      volumeTimer = timeToService*450/245;
+      //timeToService = (millis() - startTime)/1000;
+      //volumeTimer = timeToService*450/245;
       // envoi vers le serveur d'API
-      sendToAPI(selectedPump, volumeTimer, "Completed");
+      //sendToAPI(selectedPump, volumeTimer, "Completed");
       
       desactiverToutesPompes();
       //TemoinQuantite = 0;
@@ -193,8 +193,10 @@ void activerPompe(int num) {
 
 void desactiverToutesPompes() {
   if (isPumpActive) {  // Si la pompe était active
-    totalPumpTime += (millis() - startTimePump) / 1000.0;  // Ajoute le temps en secondes
+    timeToService = (millis() - startTime) / 1000.0;  // Ajoute le temps en secondes
     isPumpActive = false;
+    volumeTimer = timeToService * 450 / 245;
+    sendToAPI(selectedPump, volumeTimer, "completed");
   }
   digitalWrite(RELAY_PUMP1, LOW);
   digitalWrite(RELAY_PUMP2, LOW);
@@ -229,7 +231,7 @@ void sendToAPI(int pumpNumber, float fillLevel, std::string status) {
 
   // Création du payload JSON
   StaticJsonDocument<200> doc;
-  doc["juiceType"] = (pumpNumber == 1) ? "Orange" : (pumpNumber == 2) ? "Apple" : "Pineapple";
+  doc["juiceType"] = (pumpNumber == 1) ? "Orange" : (pumpNumber == 2) ? "Ananas" : "Maracouja";
   doc["quantity"] = fillLevel;
   doc["status"] = status;
   
