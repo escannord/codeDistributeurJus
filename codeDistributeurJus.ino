@@ -68,8 +68,8 @@ void setup() {
   Serial.println(WiFi.localIP());
 
   // Config Web Server
-  server.on("/", handleWebPage);
-  server.begin();
+  //server.on("/", handleWebPage);
+  //server.begin();
 
   // Pompes
   pinMode(RELAY_PUMP1, OUTPUT);
@@ -237,7 +237,7 @@ void sendToAPI(int pumpNumber, float fillLevel, std::string status) {
   
   String payload;
   serializeJson(doc, payload);
-
+  Serial.println(payload);
   int httpCode = http.POST(payload);
 
   if (httpCode > 0) {
