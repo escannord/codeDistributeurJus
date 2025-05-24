@@ -2,6 +2,10 @@
 #include <TFT_eSPI.h>
 #include <SPI.h>
 #include <NewPing.h>
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <ArduinoJson.h>
+
 
 #define TRIG_PIN 4
 #define ECHO_PIN 15
@@ -12,6 +16,10 @@
 #define RELAY_PUMP1 5
 #define RELAY_PUMP2 24
 #define RELAY_PUMP3 14
+
+const char* ssid = "votre_SSID";
+const char* password = "votre_mot_de_passe";
+const char* apiUrl = "https://juiceapi.onrender.com/logs";
 
 TFT_eSPI tft = TFT_eSPI();
 NewPing sonar(TRIG_PIN, ECHO_PIN, MAX_DISTANCE);
@@ -29,6 +37,14 @@ byte colPins[COLS] = {12};
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 
 int selectedPump = 0;
+
+/* struct STATUS{
+  PENDING = "pending",
+  PROCESSING = "processing",
+  FAILED = "failed",
+  COMPLETED = "completed"
+}; */
+
 
 void setup() {
   Serial.begin(115200);
@@ -55,6 +71,15 @@ void setup() {
   tft.println("2. Jus 2");
   tft.setCursor(10, 80);
   tft.println("3. Jus 3");
+
+  // Configuration de la connexion WiFi
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.println("Connecting to WiFi...");
+  }
+  Serial.println("Connected to WiFi");
+
 }
 
 void loop() {
@@ -78,6 +103,7 @@ void loop() {
       activerPompe(selectedPump);
     } else {
       desactiverToutesPompes();
+      sendToAPI(selectedPump, distance, "completed");
     }
   } else {
     desactiverToutesPompes();
@@ -96,4 +122,35 @@ void desactiverToutesPompes() {
   digitalWrite(RELAY_PUMP1, HIGH);
   digitalWrite(RELAY_PUMP2, HIGH);
   digitalWrite(RELAY_PUMP3, HIGH);
+}
+
+
+void sendToAPI(int pumpNumber, float fillLevel, std::string status) {
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("Erreur WiFi");
+    return;
+  }
+
+  HTTPClient http;
+  http.begin(apiUrl);
+  http.addHeader("Content-Type", "application/json");
+
+  // Création du payload JSON
+  StaticJsonDocument<200> doc;
+  doc["juiceType"] = (pumpNumber == 1) ? "Orange" : (pumpNumber == 2) ? "Apple" : "Pineapple";
+  doc["quantity"] = fillLevel;
+  doc["status"] = status;
+  
+  String payload;
+  serializeJson(doc, payload);
+
+  int httpCode = http.POST(payload);
+
+  if (httpCode > 0) {
+    Serial.printf("Code HTTP: %d\n", httpCode);
+  } else {
+    Serial.printf("Échec de la requête: %s\n", http.errorToString(httpCode).c_str());
+  }
+
+  http.end();
 }
