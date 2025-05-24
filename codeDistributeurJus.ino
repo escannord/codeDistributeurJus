@@ -150,11 +150,15 @@ void loop() {
       tft.println("Remplissage...");
     } else {
       desactiverToutesPompes();
+      // envoi vers le serveur d'API
+      sendToAPI(selectedPump, TemoinQuantite, "Completed");
+      TemoinQuantite = 0;
+      
       tft.fillRect(10, 100, 240, 30, TFT_BLACK);
       tft.setCursor(10, 100);
       tft.setTextColor(TFT_RED, TFT_BLACK);
       tft.println("Gobelet Plein");
-      //selectedPump = 0;
+      selectedPump = 0;
     }
   } else {
     desactiverToutesPompes();
@@ -172,6 +176,7 @@ void activerPompe(int num) {
   digitalWrite(RELAY_PUMP2, num == 2 ? HIGH : LOW);
   digitalWrite(RELAY_PUMP3, num == 3 ? HIGH : LOW);
   TemoinQuantite +=1;
+  Serial.println(TemoinQuantite);
 }
 
 void desactiverToutesPompes() {
