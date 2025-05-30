@@ -16,7 +16,8 @@ const char* password = "Yusuf2023";
 WebServer server(80);
 
 //API Server
-const char* apiUrl = "https://juiceapi.onrender.com/logs";
+const char* apiUrl = "https://juiceapi.onrender.com/api/logs";
+const char* apikey = "Xf8%zL@eWq!39Hb#R^Mt6Jk*PzD!CyV1G$UnQxEo";
 
 // Capteurs HX711
 #define HX711_DT1 26
@@ -230,6 +231,7 @@ void sendToAPI(int pumpNumber, float fillLevel, std::string status) {
 
   HTTPClient http;
   http.begin(apiUrl);
+  http.addHeader("x-api-key", apiKey);
   http.addHeader("Content-Type", "application/json");
 
   // Création du payload JSON
