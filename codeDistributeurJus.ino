@@ -17,7 +17,7 @@ WebServer server(80);
 
 //API Server
 const char* apiUrl = "https://juiceapi.onrender.com/api/logs";
-const char* apikey = "Xf8%zL@eWq!39Hb#R^Mt6Jk*PzD!CyV1G$UnQxEo";
+const char* apiKey = "Xf8%zL@eWq!39Hb#R^Mt6Jk*PzD!CyV1G$UnQxEo";
 
 // Capteurs HX711
 #define HX711_DT1 26
